@@ -1456,20 +1456,20 @@ colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
 
 | | หลัง Hot Reload |
 |--|--|
-| สี Theme | |
-| ค่า Counter | |
+| สี Theme | Teal |
+| ค่า Counter | 0 |
 
 **ขั้นตอนที่ 5** กด **Hot Restart** (พิมพ์ `R` ใน Terminal หรือกด 🔄)
 
 | | หลัง Hot Restart |
 |--|--|
-| สี Theme | |
-| ค่า Counter | |
+| สี Theme | Teal |
+| ค่า Counter | 0 |
 
 **ขั้นตอนที่ 6** อธิบายผลลัพธ์:
 
-> Hot Reload: สี __________ Counter __________ เพราะ __________
-> Hot Restart: สี __________ Counter __________ เพราะ __________
+> Hot Reload: สี ____Teal____ Counter ____0 หรือค่าปัจจุบันถ้าเคยกดแล้ว____ เพราะ ____เพราะ hot reload อัปเดตโค้ดและ UI แต่ยังเก็บ state ของ StatefulWidget ไว้____
+> Hot Restart: สี ____Teal____ Counter ____0____ เพราะ ____เพราะ hot restart โหลดแอปใหม่ทั้งหมด รีเซ็ต state กลับเป็นค่าเริ่มต้น____
 
 ---
 
