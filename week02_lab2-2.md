@@ -1468,8 +1468,8 @@ colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
 
 **ขั้นตอนที่ 6** อธิบายผลลัพธ์:
 
-> Hot Reload: สี ____Teal____ Counter ____0 หรือค่าปัจจุบันถ้าเคยกดแล้ว____ เพราะ ____เพราะ hot reload อัปเดตโค้ดและ UI แต่ยังเก็บ state ของ StatefulWidget ไว้____
-> Hot Restart: สี ____Teal____ Counter ____0____ เพราะ ____เพราะ hot restart โหลดแอปใหม่ทั้งหมด รีเซ็ต state กลับเป็นค่าเริ่มต้น____
+> Hot Reload: สี ____Teal____ Counter ____0 หรือค่าปัจจุบันถ้าเคยกดแล้ว____ เพราะ ____hot reload อัปเดตโค้ดและ UI แต่ยังเก็บ state ของ StatefulWidget ไว้____
+> Hot Restart: สี ____Teal____ Counter ____0____ เพราะ ____hot restart โหลดแอปใหม่ทั้งหมด รีเซ็ต state กลับเป็นค่าเริ่มต้น____
 
 ---
 
