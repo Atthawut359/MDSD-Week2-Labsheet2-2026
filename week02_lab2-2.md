@@ -1495,15 +1495,77 @@ colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
 
 **ข้อ 1** ทำไม Flutter ถึงเลือกวาด UI ด้วย Engine ของตัวเองแทนการใช้ Native Component? มีข้อดีและข้อเสียอย่างไร?
 
+เพราะต้องการควบคุมทั้งภาพและการทำงานเอง ไม่ขึ้นกับ native widget แต่ละแพลตฟอร์ม
+
+ข้อดี
+UI เหมือนกันทุกแพลตฟอร์ม
+เรนเดอร์เร็วด้วย Skia
+ปรับแต่งได้สูง ทำ animation / custom widget ง่าย
+โค้ด Dart หนึ่งชุดรันได้ทั้ง Android/iOS/Web
+
+ข้อเสีย
+แอปมีขนาดใหญ่กว่าเพราะต้องมี engine ติดมาด้วย
+ไม่ใช้ native component โดยตรง จึงต้องเขียน widget เพิ่มสำหรับลักษณะเฉพาะของแพลตฟอร์ม
+ต้องดูแลเรื่อง accessibility / platform integration เองมากขึ้น
+
 **ข้อ 2** อธิบายความสัมพันธ์ของ Widget Tree, Element Tree และ RenderObject Tree และเหตุผลที่ต้องมีทั้ง 3 ส่วน
 
-**ข้อ 3** อธิบายโครงสร้าง Widget Tree และความสัมพันธ์ระหว่าง Parent-Child Widget 
+Widget Tree, Element Tree, และ RenderObject Tree มีบทบาทคนละอย่าง
+
+Widget Tree คือโครงสร้างของ widget ที่เราเขียน เป็น immutable description ว่า UI ควรเป็นอย่างไร
+Element Tree คือ object ที่เชื่อม widget กับโลกจริง เก็บ state และดูแลการสร้าง/อัพเดต widget เมื่อ widget เปลี่ยน
+RenderObject Tree คือโครงสร้างที่จัดการ layout และ paint จริงบนหน้าจอ
+
+เหตุผลที่ต้องมีทั้งสามส่วน
+Widget Tree ให้เราคิดแบบ declarative ว่า UI หน้าตาเป็นอย่างไร
+Element Tree ช่วย track การเปลี่ยนแปลงและ reuse widget/state ได้ โดยไม่ต้องสร้างใหม่ทั้งระบบ
+RenderObject Tree แยกงานจัดวางและวาดออกจาก widget เพื่อให้ performance ดีขึ้น
+
+**ข้อ 3** อธิบายโครงสร้าง Widget Tree และความสัมพันธ์ระหว่าง Parent-Child Widget
+
+Widget Tree คือโครงสร้างแบบต้นไม้ของ Widgets ที่เราเขียนใน build() เป็น Node และ Subtree
+Widget แต่ละตัวเป็น node
+build() ของ widget จะสร้างหรือคืนค่า widget ลูก (child, children)
+parent widget จะเป็นเจ้าของ child widget
+child widget ได้รับข้อมูลผ่าน constructor ของ parent
+เมื่อ parent rebuild แล้ว child จะถูกสร้างใหม่หรืออัปเดตตาม state/props ที่เปลี่ยน
+
+ความสัมพันธ์ Parent-Child
+parent กำหนด layout และตำแหน่งของ child
+child อยู่ภายใน parent และจะถูกวาด/จัดวางในพื้นที่ของ parent
+parent สามารถมี child เดียว เช่น Container(child: ...)
+parent สามารถมีหลาย child เช่น Column(children: [...])
 
 **ข้อ 4** จากการทดลองที่ 4 ข้อ F (ลบ setState ออก) ผลที่เกิดขึ้นคืออะไร และอธิบายเหตุผลเชิงเทคนิคว่าทำไมจึงเกิดผลนั้น
 
+เมื่อเอา setState() ออก ผลคือ
+ตัวแปร _count เปลี่ยนจริงในหน่วยความจำ
+แต่หน้าจอไม่อัพเดต ยังคงแสดงค่าเดิม
+
+เหตุผลเชิงเทคนิค
+setState() เป็นสัญญาณให้ Flutter ว่า state ใน State object เปลี่ยน
+เมื่อเรียก setState() Flutter จะเรียก build() ใหม่ และ rebuild UI
+ถ้าไม่เรียกแม้ค่าในหน่วยความจำเปลี่ยน build() จะไม่ถูกเรียกอีกครั้ง จึงไม่มีการวาด UI ใหม่ ทำให้หน้าจอยังคงค่าเดิม
+
 **ข้อ 5** เมื่อออกแบบ Flutter App ที่มี Widget หลายตัว จะตัดสินใจอย่างไรว่า Widget ไหนควรเป็น Stateless และ Widget ไหนควรเป็น Stateful? ยกตัวอย่างจากใบงานนี้
 
+ถ้า Widget ไม่มีข้อมูลที่เปลี่ยนแปลงเองและแสดงผลได้จาก parameter เพียงอย่างเดียว ให้ใช้ StatelessWidget
+ถ้า Widget ต้องเก็บค่าที่เปลี่ยนได้ เช่น ตัวเลข counter, ข้อความจาก TextField, ค่าที่เลือกใน Dropdown, หรือเวลาที่อัปเดตทุกวินาที ให้ใช้ StatefulWidget
+
+ตัวอย่างจากใบงานนี้
+InfoCard เป็น StatelessWidget เพราะรับข้อมูลจาก constructor แล้วแสดงผลเท่านั้น
+DashboardPage, CounterPage, FormPage เป็น StatelessWidget เพราะแค่ประกอบหน้าและส่ง widget อื่นไปแสดง
+MainScreen เป็น StatefulWidget เพราะต้องเก็บ _selectedIndex เพื่อเปลี่ยนหน้าเมื่อกด BottomNavigation
+CounterSection เป็น StatefulWidget เพราะต้องเก็บ _count และ _step และอัปเดต UI เมื่อกดปุ่ม
+ClockWidget เป็น StatefulWidget เพราะต้องเก็บเวลาและรีเฟรชทุกวินาที
+GreetingForm เป็น StatefulWidget เพราะมี TextEditingController, ข้อความทักทาย _greeting, ข้อความ error _error และภาษาที่เลือก _language ซึ่งเปลี่ยนได้
+
 **ข้อ 6** เหตุใดจึงต้องเรียก `dispose()` และยกเลิก Timer ใน `ClockWidget`? หากไม่ทำจะเกิดอะไรขึ้นในระยะยาว?
+
+ต้องเรียก dispose() เพื่อปล่อยทรัพยากรที่ widget สร้างไว้ เช่น Timer
+Timer.periodic() จะยังทำงานต่อไปแม้ widget จะถูกลบจากหน้าจอ
+ถ้าไม่ยกเลิก จะเกิด memory leak และจะยังเรียก setState() บน state ที่ถูกทำลายได้
+ผลระยะยาวคือแอปใช้หน่วยความจำเพิ่มเรื่อย ๆ และอาจเกิดข้อผิดพลาดหรือแอปช้าลง
 
 ---
 
